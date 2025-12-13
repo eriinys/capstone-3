@@ -43,8 +43,16 @@ public class CategoriesController
     public Category getById(@PathVariable int id)
     {
         try{
-            return categoryDao.getById(id);
-        }catch (Exception ex){
+            Category category = categoryDao.getById(id);
+            if (category == null){
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
+            }
+            return category;
+        }
+        catch (ResponseStatusException e){
+            throw e; //catches and rethrows 404 NOT_FOUND instead of Exception handler that returns 500
+        }
+        catch (Exception ex){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Oops... our bad.");
         }
     }
@@ -61,6 +69,7 @@ public class CategoriesController
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')") //only ADMIN can call this function
     public Category addCategory(@RequestBody Category category)
     {
@@ -83,6 +92,7 @@ public class CategoriesController
     }
 
     @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategory(@PathVariable int id)
     {
