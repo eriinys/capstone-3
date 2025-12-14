@@ -1035,7 +1035,7 @@ collection:
       userToken: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnYXJ5IiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc1NTE2MzU2MH0.jp3yxGPazaRABZByzSNPlgn6m2XVenm06NDww7qyEnumcyMXK04diJc6bgMIjsmb_ojtGhDDN8b5RlONrFYdvQ
       adminToken: adminToken
       newCategoryId: newCategoryId
-      baseUrl: http://localhost:8443
+      baseUrl: http://localhost:8080
       newUserName: gary
       newUserPassword: thePass
     environmentPropertyOrder:
