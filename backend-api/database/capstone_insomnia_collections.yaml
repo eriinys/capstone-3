@@ -522,7 +522,7 @@ collection:
       userToken: userToken
       adminToken: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOIiwiZXhwIjoxNzU1MTYzNTU3fQ.16WP1nqnZw3rwU9L5zFItkO9N9WKKxOocYguMRUVZZcFjOVXG6RI1m06pyWP31VSShYis9SaH7uUdXJ7txbGKg
       newCategoryId: 4
-      baseUrl: http://localhost:8443
+      baseUrl: https://localhost:8443
       newUserName: gary
       newUserPassword: thePass
     environmentPropertyOrder:
@@ -1035,7 +1035,7 @@ collection:
       userToken: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnYXJ5IiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc1NTE2MzU2MH0.jp3yxGPazaRABZByzSNPlgn6m2XVenm06NDww7qyEnumcyMXK04diJc6bgMIjsmb_ojtGhDDN8b5RlONrFYdvQ
       adminToken: adminToken
       newCategoryId: newCategoryId
-      baseUrl: http://localhost:8443
+      baseUrl: https://localhost:8443
       newUserName: gary
       newUserPassword: thePass
     environmentPropertyOrder:
