@@ -31,7 +31,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()){
 
-            while(rs.next()){
+             while(rs.next()){
                 int id = rs.getInt("category_id");
                 String name = rs.getString("name");
                 String desc = rs.getString("description");
@@ -79,7 +79,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 
             int rows = ps.executeUpdate();
             if (rows != 1){
-                System.err.println("Failed to create new category.");
+                throw new RuntimeException("Insert failed.");
             }
 
             try(ResultSet keys = ps.getGeneratedKeys()){
@@ -95,35 +95,35 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public void update(int categoryId, Category category)
+    public int update(int categoryId, Category category)
     {
         String sql = "UPDATE categories SET name = ?, description = ? " +
                 "WHERE category_id = ?";
+        int rowUpdated = 0;
         try(Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)){
             ps.setString(1, category.getName());
             ps.setString(2, category.getDescription());
             ps.setInt(3, categoryId);
-            ps.executeUpdate();
+            rowUpdated = ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return rowUpdated;
     }
 
     @Override
-    public void delete(int categoryId)
-    {
+    public int delete(int categoryId) {
+        int rowsDeleted = 0;
         String sql = "DELETE FROM categories WHERE category_id = ?";
         try(Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)){
             ps.setInt(1, categoryId);
-            int rowsDeleted = ps.executeUpdate();
-            if(rowsDeleted != 1){
-                throw new RuntimeException("Failed to delete category.");
-            }
+            rowsDeleted = ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return rowsDeleted;
     }
 
     private Category mapRow(ResultSet row) throws SQLException
