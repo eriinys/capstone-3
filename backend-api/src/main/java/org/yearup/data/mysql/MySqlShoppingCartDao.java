@@ -8,6 +8,7 @@ import org.yearup.models.ShoppingCart;
 import org.yearup.models.ShoppingCartItem;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,16 +36,71 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             try(ResultSet rs = ps.executeQuery()){
                 while(rs.next()){
                     ShoppingCartItem item = new ShoppingCartItem();
-                    item.setProduct(new Product(rs.getInt("product_id"), rs.getString("name"), rs.getBigDecimal("price"),
-                            rs.getInt("category_id"), rs.getString("description"), rs.getString("subcategory"),
-                            rs.getInt("stock"), rs.getBoolean("featured"), rs.getString("image_url")));
+                    item.setProduct(mapRow(rs));
                     item.setQuantity(rs.getInt("quantity"));
                     cart.add(item);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
+
         }
         return cart;
+    }
+
+    public ShoppingCartItem addOrUpdateItem(int productId, int quantity, int userId){
+        String addOrUpdate = "INSERT INTO shopping_cart (user_id, product_id, quantity) " +
+                "VALUES (?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE quantity = quantity + ?"; //an UPDATE occurs instead when applying INSERT INTO would cause duplicate value in PK
+
+        String returnUpdate = "SELECT * FROM shopping_cart JOIN products USING(product_id) " +
+                "WHERE user_id = ? AND product_id = ?";
+
+        ShoppingCartItem item = new ShoppingCartItem();
+
+        try(Connection conn = getConnection();
+        PreparedStatement ps = conn.prepareStatement(addOrUpdate)){
+            ps.setInt(1, userId);
+            ps.setInt(2, productId);
+            ps.setInt(3, quantity);
+            ps.setInt(4, quantity);
+
+            int rows = ps.executeUpdate();
+            if (rows == 0){
+                throw new RuntimeException("Failed to add or update.");
+            }
+
+            try(PreparedStatement ps2 = conn.prepareStatement(returnUpdate)){
+                ps.setInt(1, userId);
+                ps.setInt(2, productId);
+
+                try(ResultSet rs = ps2.executeQuery()){
+                    if(rs.next()){
+                        item.setProduct(mapRow(rs));
+                        item.setQuantity(rs.getInt("quantity"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return item;
+    }
+
+    protected static Product mapRow(ResultSet row) throws SQLException
+    {
+        int productId = row.getInt("product_id");
+        String name = row.getString("name");
+        BigDecimal price = row.getBigDecimal("price");
+        int categoryId = row.getInt("category_id");
+        String description = row.getString("description");
+        String subCategory = row.getString("subcategory");
+        int stock = row.getInt("stock");
+        boolean isFeatured = row.getBoolean("featured");
+        String imageUrl = row.getString("image_url");
+
+        return new Product(productId, name, price, categoryId, description, subCategory, stock, isFeatured, imageUrl);
     }
 }
