@@ -1,5 +1,6 @@
 package org.yearup.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,13 @@ public class ShoppingCartController
     private UserDao userDao;
     private ProductDao productDao;
 
+    @Autowired
+    public ShoppingCartController(ShoppingCartDao shoppingCartDao, UserDao userDao, ProductDao productDao){
+        this.shoppingCartDao = shoppingCartDao;
+        this.userDao = userDao;
+        this.productDao = productDao;
+    }
+
     // each method in this controller requires a Principal object as a parameter
     //Principal object represent current user
     @GetMapping
@@ -49,6 +57,7 @@ public class ShoppingCartController
         }
         catch(Exception e)
         {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }

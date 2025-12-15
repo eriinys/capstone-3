@@ -1,5 +1,7 @@
 package org.yearup.data.mysql;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
@@ -11,8 +13,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Component
 public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDao {
 
+    @Autowired
     public MySqlShoppingCartDao(DataSource dataSource) {
         super(dataSource);
     }
