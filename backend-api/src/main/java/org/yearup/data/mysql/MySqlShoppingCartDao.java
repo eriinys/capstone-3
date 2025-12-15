@@ -49,6 +49,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         return cart;
     }
 
+    @Override
     public ShoppingCartItem addOrUpdateItem(int productId, int quantity, int userId){
         String addOrUpdate = "INSERT INTO shopping_cart (user_id, product_id, quantity) " +
                 "VALUES (?, ?, ?) " +
