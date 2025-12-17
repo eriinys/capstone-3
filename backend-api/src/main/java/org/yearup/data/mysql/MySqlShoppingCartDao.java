@@ -50,44 +50,58 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     }
 
     @Override
-    public ShoppingCartItem addOrUpdateItem(int productId, int quantity, int userId){
-        String addOrUpdate = "INSERT INTO shopping_cart (user_id, product_id, quantity) " +
-                "VALUES (?, ?, ?) " +
-                "ON DUPLICATE KEY UPDATE quantity = quantity + ?"; //an UPDATE occurs instead when applying INSERT INTO would cause duplicate value in PK
+    public ShoppingCartItem insertOrUpdate(int userId, int productId, int quantity){
+        String updateItem = "UPDATE shopping_cart SET quantity = quantity + ? " +
+                "WHERE product_id = ? AND user_id = ?";
 
-        String returnUpdate = "SELECT * FROM shopping_cart JOIN products USING(product_id) " +
+        String addItem = "INSERT INTO shopping_cart (user_id, product_id, quantity) " +
+                "VALUES (?, ?, ?) ";
+
+        String getItem = "SELECT * FROM shopping_cart JOIN products USING (product_id) " +
                 "WHERE user_id = ? AND product_id = ?";
 
         ShoppingCartItem item = new ShoppingCartItem();
 
         try(Connection conn = getConnection();
-        PreparedStatement ps = conn.prepareStatement(addOrUpdate)){
-            ps.setInt(1, userId);
+        PreparedStatement ps = conn.prepareStatement(updateItem)){
+            ps.setInt(1, quantity);
             ps.setInt(2, productId);
-            ps.setInt(3, quantity);
-            ps.setInt(4, quantity);
+            ps.setInt(3, userId);
 
-            int rows = ps.executeUpdate();
-            if (rows == 0){
-                throw new RuntimeException("Failed to add or update.");
-            }
+            int rowsUpdated = ps.executeUpdate();
 
-            try(PreparedStatement ps2 = conn.prepareStatement(returnUpdate)){
-                ps.setInt(1, userId);
-                ps.setInt(2, productId);
+            if (rowsUpdated == 0) {
+                try(PreparedStatement ps2 = conn.prepareStatement(addItem)){
+                    ps2.setInt(1, userId);
+                    ps2.setInt(2, productId);
+                    ps2.setInt(3, quantity);
 
-                try(ResultSet rs = ps2.executeQuery()){
-                    if(rs.next()){
-                        item.setProduct(mapRow(rs));
-                        item.setQuantity(rs.getInt("quantity"));
+                    int rowsAdded = ps2.executeUpdate();
+                    if (rowsAdded == 0){
+                        throw new RuntimeException("Failed to add or update.");
                     }
                 }
             }
+
+            try(PreparedStatement ps3 = conn.prepareStatement(getItem)){
+                ps3.setInt(1, userId);
+                ps3.setInt(2, productId);
+
+                try(ResultSet rs = ps3.executeQuery()){
+                    if(rs.next()){
+                        int quantities = rs.getInt("quantity");
+                        item.setProduct(mapRow(rs));
+                        item.setQuantity(quantities);
+                    }
+                }
+            }
+
+            return item;
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return item;
     }
 
     @Override
