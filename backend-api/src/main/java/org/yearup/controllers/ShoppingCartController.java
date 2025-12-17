@@ -100,7 +100,7 @@ public class ShoppingCartController
     // add a DELETE method to clear all products from the current users cart
     @DeleteMapping("")
     @PreAuthorize(("hasRole('ROLE_USER')"))
-    public ResponseEntity<Void> deleteAll(Principal principal){
+    public ResponseEntity<ShoppingCart> deleteAll(Principal principal){
         String userName = principal.getName();
         User user = userDao.getByUserName(userName);
         int userId = user.getId();
@@ -109,6 +109,8 @@ public class ShoppingCartController
         if(rowsDeleted == 0){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.noContent().build();
+
+        ShoppingCart cart = shoppingCartDao.getByUserId(userId);
+        return ResponseEntity.ok(cart);
     }
 }
