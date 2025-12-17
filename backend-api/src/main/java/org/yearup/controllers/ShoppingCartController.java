@@ -37,7 +37,7 @@ public class ShoppingCartController
     // each method in this controller requires a Principal object as a parameter
     //Principal object represent current user
     @GetMapping("")
-    @PreAuthorize("hasRole('User')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ShoppingCart> getCart(Principal principal) {
         try {
             // get the currently logged in username
@@ -55,12 +55,10 @@ public class ShoppingCartController
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }
-    // add a POST method to add a product to the cart - the url should be
-    // https://localhost:8080/cart/products/15 (15 is the productId to be added
 
     @PostMapping("/products/{productId}")
-    @PreAuthorize("hasRole('User')")
-    public ResponseEntity<ShoppingCartItem> addOrUpdate(@PathVariable int productId,
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ShoppingCart> insertOrUpdateToCart(@PathVariable int productId,
                                                         @RequestParam(defaultValue = "1") int quantity,
                                                         Principal principal) {
         try {
@@ -68,9 +66,10 @@ public class ShoppingCartController
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            ShoppingCartItem shoppingCartItem = shoppingCartDao.addOrUpdateItem(productId, quantity, userId);
+            shoppingCartDao.insertOrUpdate(userId, productId, quantity);
+            ShoppingCart cart = shoppingCartDao.getByUserId(userId);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(shoppingCartItem);
+             return ResponseEntity.status(HttpStatus.CREATED).body(cart);
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
@@ -78,17 +77,20 @@ public class ShoppingCartController
     }
 
     @PutMapping("/products/{productId}")
-    @PreAuthorize("hasRole('User')")
-    public ResponseEntity<ShoppingCartItem> updateCart(@PathVariable int id,
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ShoppingCart> updateCart(@PathVariable int productId,
                                                        @RequestBody ShoppingCartItem item,
                                                        Principal principal) {
         try{
             String userName = principal.getName();
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
-            ShoppingCartItem shoppingCartItem = shoppingCartDao.addOrUpdateItem(id, item.getQuantity(), userId);
 
-            return ResponseEntity.ok(shoppingCartItem);
+            shoppingCartDao.insertOrUpdate(userId ,productId, item.getQuantity());
+            ShoppingCart cart = shoppingCartDao.getByUserId(userId);
+
+            return ResponseEntity.ok(cart);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
@@ -97,7 +99,7 @@ public class ShoppingCartController
 
     // add a DELETE method to clear all products from the current users cart
     @DeleteMapping("")
-    @PreAuthorize(("hasRole('User')"))
+    @PreAuthorize(("hasRole('ROLE_USER')"))
     public ResponseEntity<Void> deleteAll(Principal principal){
         String userName = principal.getName();
         User user = userDao.getByUserName(userName);
@@ -109,5 +111,4 @@ public class ShoppingCartController
         }
         return ResponseEntity.noContent().build();
     }
-
 }
