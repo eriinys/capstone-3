@@ -8,8 +8,11 @@ class ProfileService
 
         axios.get(url)
              .then(response => {
+                 //stores user's saved default currency across the app
+                 window.defaultCurrency = response.data.defaultCurrency || "USD";
+
                  templateBuilder.build("profile", response.data, "main");
-                 //added default currency option
+                 //update profile to show saved currency preference
                  const select = document.getElementById("defaultCurrency");
                  if (select) {
                      select.value = response.data.defaultCurrency ?? "USD";
