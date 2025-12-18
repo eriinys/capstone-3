@@ -51,6 +51,7 @@ function saveProfile()
     const city = document.getElementById("city").value;
     const state = document.getElementById("state").value;
     const zip = document.getElementById("zip").value;
+    const defaultCurrency = document.getElementById("defaultCurrency").value;
 
     const profile = {
         firstName,
@@ -60,7 +61,8 @@ function saveProfile()
         address,
         city,
         state,
-        zip
+        zip,
+        defaultCurrency
     };
 
     profileService.updateProfile(profile);
