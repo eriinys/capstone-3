@@ -37,6 +37,14 @@
     <input type="text" class="form-control" id="zip" value='{{zip}}'>
     <label for="zip">Zip</label>
   </div>
+    //added default currency option
+    <div class="form-floating mb-3">
+        <select class="form-select" id="defaultCurrency">
+            <option value="USD">USD</option>
+            <option value="BTC">BTC</option>
+        </select>
+        <label for="defaultCurrency">Default Currency</label>
+    </div>
 
-  <button class="btn btn-outline-danger" onclick="saveProfile()">Update</button>
+    <button class="btn btn-outline-danger" onclick="saveProfile()">Update</button>
 </div>

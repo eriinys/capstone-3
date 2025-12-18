@@ -8,7 +8,12 @@ class ProfileService
 
         axios.get(url)
              .then(response => {
-                 templateBuilder.build("profile", response.data, "main")
+                 templateBuilder.build("profile", response.data, "main");
+                 //added default currency option
+                 const select = document.getElementById("defaultCurrency");
+                 if (select) {
+                     select.value = response.data.defaultCurrency ?? "USD";
+                 }
              })
              .catch(error => {
                  const data = {
