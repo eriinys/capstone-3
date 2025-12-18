@@ -11,12 +11,13 @@ public class Profile
     private String city = "";
     private String state = "";
     private String zip = "";
+    private String defaultCurrency = "";
 
     public Profile()
     {
     }
 
-    public Profile(int userId, String firstName, String lastName, String phone, String email, String address, String city, String state, String zip)
+    public Profile(int userId, String firstName, String lastName, String phone, String email, String address, String city, String state, String zip, String defaultCurrency)
     {
         this.userId = userId;
         this.firstName = firstName;
@@ -27,6 +28,7 @@ public class Profile
         this.city = city;
         this.state = state;
         this.zip = zip;
+        this.defaultCurrency = defaultCurrency;
     }
 
     public int getUserId()
@@ -117,5 +119,13 @@ public class Profile
     public void setZip(String zip)
     {
         this.zip = zip;
+    }
+
+    public String getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
+    public void setDefaultCurrency(String defaultCurrency) {
+        this.defaultCurrency = defaultCurrency;
     }
 }
