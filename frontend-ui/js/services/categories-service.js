@@ -9,15 +9,20 @@ class CategoryService {
 
         return axios.get(url)
             .then(response => {
+              if (typeof callback === "function") {
                 callback(response.data);
+              }
             })
             .catch(error => {
 
-                const data = {
-                    error: "Loading categories failed."
-                };
+            const status = error?.response?.status;
+            const messageFromServer = error?.response?.data?.message;
 
-                templateBuilder.append("error", data, "errors")
+            const msg = messageFromServer
+            ? `Loading categories failed (${status}): ${messageFromServer}`
+            : `Loading categories failed (${status || "no status"})`;
+
+            templateBuilder.append("error", data, "errors")
             });
     }
 }
