@@ -1,140 +1,111 @@
 # Capstone 3 – EasyShop (Backend + Frontend)
 
-This project contains a Java Spring Boot backend and a static HTML/CSS/JavaScript frontend.
+## Project Overview
+- This project is an E-Commerce web application built with Java, JavaScript and Spring Boot implementing RESTful API.
+- The backend connects to a SQL database and manages authentication, authorization, product search, category filtering, user profiles and shopping cart functionality.
 
-When you unzip the archive, you should get a folder named `capstone-3` with this structure:
+## Built With
+[![javaLogo.png](backend-api/src/main/resources/images/javaLogo.png)](https://www.java.com/en/)
 
-```text
-capstone-3/
-  backend-api/      # Java Spring Boot backend (Maven)
-  frontend-ui/         # Static HTML, CSS, JS
-````
+## Features
+- Category Filter
+  - Users can filter product by category including Electronics, Fashion and Home & Kitchen.
+-Price filter
+  - Users can set a minimum and maximum price to filter products.
+- Users Profile
+  - Users can update their profile information.
+  - Users can choose a default currency (USD or BTC).
+- Shopping Cart
+  - Users can view items added to their cart including price and quantity.
+  - Users can clear all items from their cart.
 
----
+## Usage Display
+### Home Page:
+![home1.png](backend-api/src/main/resources/images/home1.png)
 
-## Requirements
+### Category Filter (Fashion):
+![fashion_category.png](backend-api/src/main/resources/images/fashion_category.png)
 
-* **Java Development Kit (JDK) 17**
-* **IntelliJ IDEA Community Edition** (latest)
-* **MySQL Server** (e.g., MySQL 8.x)
-* **MySQL Workbench** (to run the database script)
-* Internet browser (Chrome, Firefox, Edge, Safari, etc.)
+### Price + Category Filter (Home & Kitchen):
+![category_kitchen_price_filter.png](backend-api/src/main/resources/images/category_kitchen_price_filter.png)
 
-You do **not** need to install Maven separately; IntelliJ can use its bundled Maven.
+### Cart:
+![cart1.png](backend-api/src/main/resources/images/cart1.png)
 
----
+### User Profile:
+![profile.png](backend-api/src/main/resources/images/profile.png)
 
-## How to open the project in IntelliJ
+### User Profile (Update Default Currency to BTC):
+![profile2.png](backend-api/src/main/resources/images/profile2.png)
 
-1. Unzip the project so you have a folder called `capstone-3`.
-2. Open IntelliJ IDEA (Community).
-3. Choose **File → Open...**.
-4. Select the `capstone-3` folder and click **Open**.
-5. When IntelliJ asks you to “Trust” the project, click **Trust**.
-6. IntelliJ will load the project with two modules:
+### Home Page (User Default Currency Set to BTC):
+![home2.png](backend-api/src/main/resources/images/home2.png)
 
-    * `backend-api` – Java Spring Boot backend
-    * `frontend-ui` – static HTML/CSS/JS
+### Cart (User Default Currency Set to BTC):
+![cart2.png](backend-api/src/main/resources/images/cart2.png)
 
-If IntelliJ asks you to configure an SDK, choose **JDK 17**.
+## Interesting Feature / Code Added
+### Generated SSL Certificate Using Keytool:
+![SSL_certificate_using_keytool.png](backend-api/src/main/resources/images/SSL_certificate_using_keytool.png)
 
----
+### SSL Configuration & Coinbase API Added to application.properties:
+![application_properties.png](backend-api/src/main/resources/images/application_properties.png)
 
-## Database setup (MySQL)
+### Used Environment Variables in Configuration to Privately Store Passwords:
+![environment_variable.png](backend-api/src/main/resources/images/environment_variable.png)
 
-Before you run the backend, you must create and initialize the database.
+### Client class calls the Coinbase API, sends GET request and retrieves BTC spot price as a JSON response body:
+```java
+@Component
+public class CoinbaseBtcUsdClient {
+    //HttpClient sends and receives requests/responses
+    //Used here to call Coinbase API and receive the body as JSON text
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+    private final String url;
 
-1. Make sure **MySQL Server** is running on your machine.
+    @Autowired
+    public CoinbaseBtcUsdClient(@Value("${api.coinbase.uri}") String url){
+        this.url = url;
+    }
 
-2. Open **MySQL Workbench**.
+    public String fetchBtcUsdJson() throws Exception{
+        URI uri = URI.create(url);
+        //builds HTTP GET request to the provided URI (no body required)
+        HttpRequest request = HttpRequest.newBuilder(uri).header("Accept", "application/json").GET().build();
+        //sends the request and converts response body (JSON bytes) to a String
+        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-3. Connect to your local MySQL server (for example, `localhost` with your MySQL username).
+        if (response.statusCode() / 100 !=2){ //integer division gives exactly 2 (allows all 2xx codes)
+            throw new RuntimeException("Coinbase request failed: HTTP " + response.statusCode() + " body=" + response.body());
+        }
+        return response.body();
+    }
+}
+```
 
-4. In MySQL Workbench, go to **File → Open SQL Script...**.
+### Service class calls the client, parses the JSON response body and maps it into a domain model:
+```java
+@Component
+public class CoinbaseBtcPriceService {
+    private CoinbaseBtcUsdClient client;
+    private ObjectMapper objectMapper;
 
-5. Navigate to the project folder and open:
+    public CoinbaseBtcPriceService(CoinbaseBtcUsdClient client, ObjectMapper objectMapper){
+        this.client = client;
+        this.objectMapper = objectMapper;
+    }
 
-   ```text
-   capstone-3/backend-api/database/create_database_easyshop.sql
-   ```
-
-6. Once the script is open in Workbench, click the **Execute** button (the lightning bolt icon) to run the script.
-
-    * This will create the database and any required tables/data for the EasyShop application.
-
-7. In IntelliJ, open:
-
-   ```text
-   capstone-3/backend-api/src/main/resources/application.properties
-   ```
-
-   and check the database connection settings (URL, username, and password).
-   Make sure:
-
-    * The **database name** matches what the SQL script created.
-    * The **username and password** match a valid MySQL user on your system.
-
-   If needed, you can either:
-
-    * Update `application.properties` to match your MySQL username/password, **or**
-    * Create a MySQL user in Workbench that matches the values in `application.properties`.
-
-Once the script has run successfully and the credentials match, the backend will be able to connect to the database.
-
----
-
-## How to run the backend
-
-1. In IntelliJ, make sure the project is fully indexed and Maven dependencies have been downloaded (you may see a progress bar at the bottom).
-2. In the **Run configuration** dropdown (top-right of IntelliJ), choose:
-
-   **`Backend (Spring Boot)`**
-
-   (If it doesn’t exist, you can run the main class manually by right-clicking the `EasyshopApplication` class in `backend-api` and choosing **Run**.)
-3. Click the green **Run** triangle.
-4. The Spring Boot application will start and listen on:
-
-   ```text
-   http://localhost:8080
-   ```
-
-Check the Run tool window for any startup errors (for example, database connection problems). If there are errors, double-check your MySQL setup and `application.properties` values.
-
----
-
-## How to run the frontend
-
-1. In IntelliJ’s **Project** view, navigate to:
-
-   ```text
-   frontend-ui/index.html
-   ```
-
-2. Right-click `index.html` → **Open in Browser** → choose your browser.
-
-3. Alternatively, you can locate `frontend-ui/index.html` in Finder / File Explorer and double-click it to open it in a browser.
-
----
-
-## Where to make changes
-
-* **Backend logic** (controllers, models, data access, etc.) is in:
-
-  ```text
-  backend-api/src/main/java/
-  ```
-
-* **Backend configuration** (including database settings) is in:
-
-  ```text
-  backend-api/src/main/resources/
-  ```
-
-* **Frontend HTML/CSS/JS** is in the `frontend-ui` folder:
-
-  ```text
-  frontend-ui/index.html
-  frontend-ui/css/
-  frontend-ui/js/
-  frontend-ui/images/
-  ```
+    public BtcPriceDomainModel getSpotPrice() throws Exception {
+       //gets JSON as String
+        String json = client.fetchBtcUsdJson();
+        //parses JSON String into outer DTO
+        CoinbaseSpotPriceResponse response = objectMapper.readValue(json, CoinbaseSpotPriceResponse.class);
+        //records into nested DTO
+        CoinbaseData data = response.data();
+        //map DTO into domain model
+        BigDecimal amount = new BigDecimal(data.amount());
+        //return new domain model
+        return new BtcPriceDomainModel(data.base(), data.currency(), amount);
+    }
+}
+```
