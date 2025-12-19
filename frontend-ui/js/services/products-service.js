@@ -91,27 +91,28 @@ class ProductService {
         const url = `${config.baseUrl}/products${this.filter.queryString()}`;
 
         axios.get(url)
-             .then(response => {
-                 let data = {};
-                 data.products = response.data;
+          .then(response => {
+              let data = {};
+              data.products = response.data;
 
-                 const symbol =
-                     window.defaultCurrency === "BTC" ? "₿" : "$";
+              data.products.forEach(p => {
 
-                 data.products.forEach(product => {
-                     product.currencySymbol = symbol;
+                  if (window.defaultCurrency === "BTC") {
+                      p.displayPrice = `₿${Number(p.price).toFixed(8)}`;
+                  } else {
+                      p.displayPrice = `$${p.price}`;
+                  }
 
-                     if(!this.hasPhoto(product.imageUrl)) {
-                         product.imageUrl = "no-image.jpg";
-                     }
-                 });
+                  if (!this.hasPhoto(p.imageUrl)) {
+                      p.imageUrl = "no-image.jpg";
+                  }
+              });
 
-                 templateBuilder.build('product', data, 'content', this.enableButtons);
-             })
-             .catch(error => {
-                 const data = { error: "Searching products failed." };
-                 templateBuilder.append("error", data, "errors");
-             });
+              templateBuilder.build('product', data, 'content', this.enableButtons);
+          })
+          .catch(error => {
+              templateBuilder.append("error", { error: "Searching products failed." }, "errors");
+          });
     }
 
     enableButtons()

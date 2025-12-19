@@ -27,6 +27,20 @@ class ProfileService
              })
     }
 
+    loadDefaultCurrencyOnly()
+    {
+            const url = `${config.baseUrl}/profile`;
+
+            axios.get(url)
+                .then(response => {
+                    window.defaultCurrency = response.data.defaultCurrency || "USD";
+                })
+                .catch(() => {
+                    window.defaultCurrency = "USD";
+                });
+    }
+
+
     updateProfile(profile)
     {
 

@@ -125,6 +125,14 @@ function closeError(control)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    window.defaultCurrency = window.defaultCurrency || "USD";
 
     loadHome();
+
+    if (userService.isLoggedIn() && typeof profileService !== "undefined") {
+            profileService.loadDefaultCurrencyOnly();
+
+
+            setTimeout(() => productService.search(), 200);
+    }
 });

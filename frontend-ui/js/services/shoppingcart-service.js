@@ -125,7 +125,14 @@ class ShoppingCartService {
         photoDiv.appendChild(img)
         let priceH4 = document.createElement("h4");
         priceH4.classList.add("price");
-        priceH4.innerText = `$${item.product.price}`;
+
+        const symbol = window.defaultCurrency === "BTC" ? "₿" : "$";
+        const price =
+            window.defaultCurrency === "BTC"
+                ? Number(item.product.price).toFixed(8)
+                : item.product.price;
+        priceH4.innerText = `${symbol}${price}`;
+
         photoDiv.appendChild(priceH4);
         outerDiv.appendChild(photoDiv);
 
