@@ -7,12 +7,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.ProductDao;
+import org.yearup.data.ProfileDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
-import org.yearup.models.ShoppingCart;
-import org.yearup.models.ShoppingCartItem;
-import org.yearup.models.User;
+import org.yearup.models.*;
+import org.yearup.service.CoinbaseBtcPriceService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 
 // convert this class to a REST controller
@@ -26,12 +28,16 @@ public class ShoppingCartController
     private ShoppingCartDao shoppingCartDao;
     private UserDao userDao;
     private ProductDao productDao;
+    private ProfileDao profileDao;
+    private CoinbaseBtcPriceService btcPriceService;
 
     @Autowired
-    public ShoppingCartController(ShoppingCartDao shoppingCartDao, UserDao userDao, ProductDao productDao){
+    public ShoppingCartController(ShoppingCartDao shoppingCartDao, UserDao userDao, ProductDao productDao, ProfileDao profileDao, CoinbaseBtcPriceService btcPriceService){
         this.shoppingCartDao = shoppingCartDao;
         this.userDao = userDao;
         this.productDao = productDao;
+        this.profileDao = profileDao;
+        this.btcPriceService = btcPriceService;
     }
 
     // each method in this controller requires a Principal object as a parameter
@@ -40,16 +46,36 @@ public class ShoppingCartController
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ShoppingCart> getCart(Principal principal) {
         try {
-            // get the currently logged in username
+            String currency = "USD";
+
             String userName = principal.getName();
-            // find database user by userId
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
+
+            if(principal != null){
+                Profile profile = profileDao.getProfileById(userId);
+
+                if(profile != null && profile.getDefaultCurrency().equalsIgnoreCase("BTC")){
+                    currency = "BTC";
+                }
+            }
 
             // use the shoppingcartDao to get all items in the cart and return the cart
             ShoppingCart cart = shoppingCartDao.getByUserId(userId);
 
+            if (cart!= null && currency.equalsIgnoreCase("BTC")) {
+
+                BigDecimal usdPerBtc = btcPriceService.getSpotPrice().getAmount();
+
+                //grabs the values of the items inside cart since cart is a hashmap not a collection
+                for (ShoppingCartItem item : cart.getItems().values()) {
+                    BigDecimal btc = item.getProduct().getPrice().divide(usdPerBtc, 8, RoundingMode.HALF_UP);
+                    item.getProduct().setPrice(btc);
+                }
+            }
+
             return ResponseEntity.ok(cart); //throws status code 200 with body (cart)
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
