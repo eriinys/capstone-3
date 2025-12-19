@@ -10,7 +10,7 @@
 ## Features
 - Category Filter
   - Users can filter product by category including Electronics, Fashion and Home & Kitchen.
--Price filter
+- Price filter
   - Users can set a minimum and maximum price to filter products.
 - Users Profile
   - Users can update their profile information.
