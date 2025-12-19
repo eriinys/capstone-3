@@ -22,6 +22,7 @@ public class CoinbaseBtcUsdClient {
     }
 
     public String fetchBtcUsdJson() throws Exception{
+        //converts the String url into URI object
         URI uri = URI.create(url);
         //builds HTTP GET request to the provided URI (no body required)
         HttpRequest request = HttpRequest.newBuilder(uri).header("Accept", "application/json").GET().build();
